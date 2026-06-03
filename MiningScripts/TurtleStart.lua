@@ -8,6 +8,8 @@ local Mine = require("Mine")
 local TurtleStart = {}
 TurtleStart.__index = TurtleStart
 
+local DEBUG_MODE = true
+
 function TurtleStart.new()
 	local self = setmetatable({}, TurtleStart)
 
@@ -31,6 +33,10 @@ function TurtleStart:start()
 	print("TurtleStart started.")
 
 	local stage = self.state:getStage()
+	if DEBUG_MODE then
+		stage = "at_base"
+	end
+
 	print("Stage: " .. stage)
 
 	if stage == "at_base" then
