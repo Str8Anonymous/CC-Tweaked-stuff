@@ -43,7 +43,6 @@ function TurtleStart:start()
 		self.movement:turnRight()
 		self.movement:forwardMany(2)
 		self.movement:turnAround()
-		stage = self.state:setStage("at_base")
 	end
 
 	print("Stage " .. stage)
