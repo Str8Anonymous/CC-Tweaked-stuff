@@ -3,7 +3,6 @@
 local Movement = {}
 Movement.__index = Movement
 
--- We now pass the state instance in here
 function Movement.new(state)
 	local self = setmetatable({}, Movement)
 	self.minFuel = 20
@@ -31,7 +30,7 @@ function Movement:refuelIfNeeded(minFuel)
 			turtle.refuel(1)
 
 			if turtle.getFuelLevel() >= minFuel then
-				print("Fuel: " .. turtle.getFuelLevel())
+				print("Fuel " .. turtle.getFuelLevel())
 				return true
 			end
 		end
@@ -40,18 +39,17 @@ function Movement:refuelIfNeeded(minFuel)
 	error("Not enough fuel", 0)
 end
 
--- Fixed this function so it updates the correct instance
 function Movement:_changeY(amount)
 	self.state.data.y = (self.state.data.y or 0) + amount
 	self.state:save()
-	print("Current Y: " .. self.state.data.y)
+	print("Current Y " .. self.state.data.y)
 end
 
 function Movement:_digForward()
 	while turtle.detect() do
 		local ok, err = turtle.dig()
 		if not ok then
-			print("Dig failed: " .. tostring(err))
+			print("Dig failed " .. tostring(err))
 			sleep(0.5)
 		else
 			sleep(0.2)
@@ -63,7 +61,7 @@ function Movement:_digUp()
 	while turtle.detectUp() do
 		local ok, err = turtle.digUp()
 		if not ok then
-			print("Dig up failed: " .. tostring(err))
+			print("Dig up failed " .. tostring(err))
 			sleep(0.5)
 		else
 			sleep(0.2)
@@ -75,7 +73,7 @@ function Movement:_digDown()
 	while turtle.detectDown() do
 		local ok, err = turtle.digDown()
 		if not ok then
-			print("Dig down failed: " .. tostring(err))
+			print("Dig down failed " .. tostring(err))
 			sleep(0.5)
 		else
 			sleep(0.2)
@@ -89,7 +87,20 @@ function Movement:forward()
 		self:_digForward()
 		sleep(0.2)
 	end
-	self.state:pushMove("forward")
+
+	-- This tracks the exact coordinates instead of just pushing a move string
+	local f = self.state.data.facing or 0
+	if f == 0 then
+		self.state.data.z = self.state.data.z - 1
+	elseif f == 1 then
+		self.state.data.x = self.state.data.x + 1
+	elseif f == 2 then
+		self.state.data.z = self.state.data.z + 1
+	elseif f == 3 then
+		self.state.data.x = self.state.data.x - 1
+	end
+
+	self.state:save()
 	return true
 end
 
@@ -100,7 +111,6 @@ function Movement:up()
 		sleep(0.2)
 	end
 	self:_changeY(1)
-	self.state:pushMove("up")
 	return true
 end
 
@@ -111,7 +121,6 @@ function Movement:down()
 		sleep(0.2)
 	end
 	self:_changeY(-1)
-	self.state:pushMove("down")
 	return true
 end
 
@@ -135,53 +144,82 @@ end
 
 function Movement:turnLeft()
 	turtle.turnLeft()
-	self.state:pushMove("turnLeft")
+	self.state.data.facing = (self.state.data.facing - 1) % 4
+	self.state:save()
 end
 
 function Movement:turnRight()
 	turtle.turnRight()
-	self.state:pushMove("turnRight")
+	self.state.data.facing = (self.state.data.facing + 1) % 4
+	self.state:save()
 end
 
 function Movement:turnAround()
-	turtle.turnLeft()
-	turtle.turnLeft()
-	self.state:pushMove("turnAround")
+	self:turnRight()
+	self:turnRight()
 end
 
--- Just replace your current returnHome function in Movement.lua with this one
-function Movement:returnHome()
-	print("Returning home...")
-	local lastMove = self.state:popMove()
-
-	while lastMove do
-		if lastMove == "forward" then
-			turtle.back()
-		elseif lastMove == "up" then
-			self:refuelIfNeeded()
-			while not turtle.down() do
-				self:_digDown()
-				sleep(0.2)
-			end
-			self:_changeY(-1)
-		elseif lastMove == "down" then
-			self:refuelIfNeeded()
-			while not turtle.up() do
-				self:_digUp()
-				sleep(0.2)
-			end
-			self:_changeY(1)
-		elseif lastMove == "turnLeft" then
-			turtle.turnRight()
-		elseif lastMove == "turnRight" then
-			turtle.turnLeft()
-		elseif lastMove == "turnAround" then
-			turtle.turnLeft()
-			turtle.turnLeft()
-		end
-
-		lastMove = self.state:popMove()
+function Movement:turnTo(targetFacing)
+	local current = self.state.data.facing or 0
+	if current == targetFacing then
+		return
 	end
+
+	local diff = (targetFacing - current) % 4
+	if diff == 1 then
+		self:turnRight()
+	elseif diff == 3 then
+		self:turnLeft()
+	else
+		self:turnAround()
+	end
+end
+
+function Movement:gotoY(targetY)
+	while self.state.data.y < targetY do
+		self:up()
+	end
+	while self.state.data.y > targetY do
+		self:down()
+	end
+end
+
+function Movement:gotoX(targetX)
+	if self.state.data.x < targetX then
+		self:turnTo(1)
+	elseif self.state.data.x > targetX then
+		self:turnTo(3)
+	end
+
+	while self.state.data.x ~= targetX do
+		self:forward()
+	end
+end
+
+function Movement:gotoZ(targetZ)
+	if self.state.data.z < targetZ then
+		self:turnTo(2)
+	elseif self.state.data.z > targetZ then
+		self:turnTo(0)
+	end
+
+	while self.state.data.z ~= targetZ do
+		self:forward()
+	end
+end
+
+function Movement:returnHome()
+	print("Calculating fast route home...")
+
+	-- Go up to starting Y so we do not hit caves
+	self:gotoY(64)
+
+	-- Travel X and Z
+	self:gotoX(1085)
+	self:gotoZ(-339)
+
+	-- Face forward again
+	self:turnTo(0)
 
 	print("Arrived home!")
 
