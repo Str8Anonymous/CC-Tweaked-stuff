@@ -30,7 +30,8 @@ end
 
 print("Factory reset complete. Deleted " .. count .. " file(s).")
 
-print("WOULD YOU LIKE TO REBOOT?")
+os.sleep(0.5)
+print("Press Enter to reboot")
 
 local _, key = os.pullEvent("key")
 
