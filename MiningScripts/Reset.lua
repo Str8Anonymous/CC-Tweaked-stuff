@@ -34,7 +34,7 @@ print("WOULD YOU LIKE TO REBOOT?")
 
 local _, key = os.pullEvent("key")
 
-if key then = keys.enter then
+if key == key.enter then
 	print("Rebooting..")
 	sleep(1.5)
 	os.reboot()
