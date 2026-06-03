@@ -1,28 +1,24 @@
-print("WARNING: This will delete all local scripts and state files!")
-print("Press Enter to confirm, or any other key to cancel.")
+-- FactoryReset.lua
 
+print("WARNING This will delete all downloaded scripts and state files!")
+print("Press Enter to confirm or any other key to cancel.")
+
+local FILES_TO_IGNORE = {
+	"startup.lua",
+	"Update.lua",
+	"Reset.lua",
+}
 local _, key = os.pullEvent("key")
 if key ~= keys.enter then
 	print("Reset canceled.")
 	return
 end
 
--- List of all files to delete
-local filesToDelete = {
-	"state.json",
-	"Main.lua",
-	"TurtleStart.lua",
-	"Movement.lua",
-	"State.lua",
-	"EnterStart.lua",
-	"Mine.lua",
-	"Update.lua",
-}
-
+local allFiles = fs.list("")
 local count = 0
 
-for _, fileName in ipairs(filesToDelete) do
-	if fs.exists(fileName) then
+for _, fileName in ipairs(allFiles) do
+	if not table.find(FILES_TO_IGNORE, fileName) then
 		print("Deleting " .. fileName .. "...")
 		fs.delete(fileName)
 		count = count + 1
