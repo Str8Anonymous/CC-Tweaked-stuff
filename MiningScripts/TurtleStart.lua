@@ -34,7 +34,7 @@ function TurtleStart:start()
 
 	local stage = self.state:getStage()
 	if DEBUG_MODE then
-		stage = "at_base"
+		stage = self.state:setState("at_base")
 	end
 
 	print("Stage: " .. stage)
