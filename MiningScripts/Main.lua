@@ -35,3 +35,5 @@ if stage == "at_cave_start" then
 else
 	error("Unknown stage: " .. tostring(stage), 0)
 end
+
+State.setStage("at_base")
