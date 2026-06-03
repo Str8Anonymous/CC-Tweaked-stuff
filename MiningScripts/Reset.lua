@@ -9,6 +9,7 @@ local FILES_TO_IGNORE = {
 	["Reset.lua"] = true,
 }
 local _, key = os.pullEvent("key")
+
 if key ~= keys.enter then
 	print("Reset canceled.")
 	return
