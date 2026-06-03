@@ -1,63 +1,72 @@
 -- State.lua
 
 local State = {}
+State.__index = State
 
-local STATE_FILE = "state.json"
-
-local DEFAULT_STATE = {
+local DEFAULT_DATA = {
 	stage = "at_base",
 }
 
-local function copyDefault()
+function State.new(path)
+	local self = setmetatable({}, State)
+
+	self.path = path or "state.json"
+	self.data = self:load()
+
+	return self
+end
+
+function State:_copyDefault()
 	return {
-		stage = DEFAULT_STATE.stage,
+		stage = DEFAULT_DATA.stage,
 	}
 end
 
-function State.load()
-	if not fs.exists(STATE_FILE) then
-		return copyDefault()
+function State:load()
+	if not fs.exists(self.path) then
+		return self:_copyDefault()
 	end
 
-	local file = fs.open(STATE_FILE, "r")
+	local file = fs.open(self.path, "r")
 	local contents = file.readAll()
 	file.close()
 
 	if contents == nil or contents == "" then
-		return copyDefault()
+		return self:_copyDefault()
 	end
 
 	local data = textutils.unserializeJSON(contents)
 	if type(data) ~= "table" then
-		return copyDefault()
+		return self:_copyDefault()
 	end
 
 	if type(data.stage) ~= "string" then
-		data.stage = DEFAULT_STATE.stage
+		data.stage = DEFAULT_DATA.stage
 	end
 
 	return data
 end
 
-function State.save(data)
-	local file = fs.open(STATE_FILE, "w")
-	file.write(textutils.serializeJSON(data))
+function State:save()
+	local file = fs.open(self.path, "w")
+	file.write(textutils.serializeJSON(self.data))
 	file.close()
 end
 
-function State.getStage()
-	local data = State.load()
-	return data.stage
+function State:getStage()
+	return self.data.stage
 end
 
-function State.setStage(stage)
-	local data = State.load()
-	data.stage = stage
-	State.save(data)
+function State:setStage(stage)
+	self.data.stage = stage
+	self:save()
+
+	return stage
 end
 
-function State.reset()
-	State.save(copyDefault())
+function State:reset()
+	self.data = self:_copyDefault()
+	self:save()
 end
 
 return State

@@ -1,13 +1,26 @@
 -- EnterStart.lua
 
-local Movement = require("Movement")
+local EnterStart = {}
+EnterStart.__index = EnterStart
 
-print("EnterStart started.")
+function EnterStart.new(context)
+	local self = setmetatable({}, EnterStart)
 
--- Replace this with the real path from chest/base to cave entrance.
--- Example:
--- Movement.forwardMany(3)
--- Movement.turnRight()
--- Movement.forwardMany(5)
+	self.state = context.state
+	self.movement = context.movement
 
-print("EnterStart finished.")
+	return self
+end
+
+function EnterStart:run()
+	print("EnterStart running.")
+
+	-- Example path:
+	-- self.movement:forwardMany(3)
+	-- self.movement:turnRight()
+	-- self.movement:forwardMany(5)
+
+	print("EnterStart finished.")
+end
+
+return EnterStart

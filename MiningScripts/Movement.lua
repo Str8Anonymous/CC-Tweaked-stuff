@@ -1,47 +1,18 @@
 -- Movement.lua
 
 local Movement = {}
+Movement.__index = Movement
 
-local MIN_FUEL = 20
+function Movement.new()
+	local self = setmetatable({}, Movement)
 
-local function tryDig()
-	while turtle.detect() do
-		local ok, err = turtle.dig()
-		if not ok then
-			print("Dig failed: " .. tostring(err))
-			sleep(0.5)
-		else
-			sleep(0.2)
-		end
-	end
+	self.minFuel = 20
+
+	return self
 end
 
-local function tryDigUp()
-	while turtle.detectUp() do
-		local ok, err = turtle.digUp()
-		if not ok then
-			print("Dig up failed: " .. tostring(err))
-			sleep(0.5)
-		else
-			sleep(0.2)
-		end
-	end
-end
-
-local function tryDigDown()
-	while turtle.detectDown() do
-		local ok, err = turtle.digDown()
-		if not ok then
-			print("Dig down failed: " .. tostring(err))
-			sleep(0.5)
-		else
-			sleep(0.2)
-		end
-	end
-end
-
-function Movement.refuelIfNeeded(minFuel)
-	minFuel = minFuel or MIN_FUEL
+function Movement:refuelIfNeeded(minFuel)
+	minFuel = minFuel or self.minFuel
 
 	if turtle.getFuelLevel() == "unlimited" then
 		return true
@@ -66,106 +37,49 @@ function Movement.refuelIfNeeded(minFuel)
 		end
 	end
 
-	return false
+	error("Not enough fuel", 0)
 end
 
-function Movement.forward()
-	Movement.refuelIfNeeded()
+function Movement:_digForward()
+	while turtle.detect() do
+		local ok, err = turtle.dig()
+		if not ok then
+			print("Dig failed: " .. tostring(err))
+			sleep(0.5)
+		else
+			sleep(0.2)
+		end
+	end
+end
+
+function Movement:forward()
+	self:refuelIfNeeded()
 
 	while not turtle.forward() do
-		tryDig()
-
-		local ok, err = turtle.forward()
-		if ok then
-			return true
-		end
-
-		print("Forward blocked: " .. tostring(err))
-		sleep(0.5)
+		self:_digForward()
+		sleep(0.2)
 	end
 
 	return true
 end
 
-function Movement.up()
-	Movement.refuelIfNeeded()
-
-	while not turtle.up() do
-		tryDigUp()
-
-		local ok, err = turtle.up()
-		if ok then
-			return true
-		end
-
-		print("Up blocked: " .. tostring(err))
-		sleep(0.5)
+function Movement:forwardMany(amount)
+	for i = 1, amount do
+		self:forward()
 	end
-
-	return true
 end
 
-function Movement.down()
-	Movement.refuelIfNeeded()
-
-	while not turtle.down() do
-		tryDigDown()
-
-		local ok, err = turtle.down()
-		if ok then
-			return true
-		end
-
-		print("Down blocked: " .. tostring(err))
-		sleep(0.5)
-	end
-
-	return true
-end
-
-function Movement.back()
-	Movement.refuelIfNeeded()
-
-	while not turtle.back() do
-		print("Back blocked.")
-		sleep(0.5)
-	end
-
-	return true
-end
-
-function Movement.turnLeft()
+function Movement:turnLeft()
 	turtle.turnLeft()
-	return true
 end
 
-function Movement.turnRight()
+function Movement:turnRight()
 	turtle.turnRight()
-	return true
 end
 
-function Movement.turnAround()
+function Movement:turnAround()
 	turtle.turnLeft()
 	turtle.turnLeft()
-	return true
-end
-
-function Movement.forwardMany(amount)
-	for i = 1, amount do
-		Movement.forward()
-	end
-end
-
-function Movement.upMany(amount)
-	for i = 1, amount do
-		Movement.up()
-	end
-end
-
-function Movement.downMany(amount)
-	for i = 1, amount do
-		Movement.down()
-	end
 end
 
 return Movement
