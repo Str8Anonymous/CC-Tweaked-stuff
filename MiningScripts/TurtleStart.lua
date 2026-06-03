@@ -14,7 +14,12 @@ function TurtleStart.new()
 	local self = setmetatable({}, TurtleStart)
 
 	self.state = State.new()
-	self.movement = Movement.new()
+	self.state.data.x = 1085
+	self.state.data.y = 64
+	self.state.data.z = -339
+
+	-- Pass the state instance to movement
+	self.movement = Movement.new(self.state)
 
 	self.enterStart = EnterStart.new({
 		state = self.state,
@@ -35,21 +40,18 @@ function TurtleStart:start()
 	local stage = self.state:getStage()
 
 	if DEBUG_MODE then
+		self.movement:turnRight()
+		self.movement:forwardMany(2)
+		self.movement:turnAround()
 		stage = self.state:setStage("at_base")
 	end
 
-	print("Stage: " .. stage)
+	print("Stage " .. stage)
 
 	if stage == "at_base" then
 		self.enterStart:run()
-
-		stage = self.state:setStage("at_cave_start")
-	end
-
-	if stage == "at_cave_start" then
-		self.mine:run()
-	else
-		error("Unknown stage: " .. tostring(stage), 0)
+		print("at cave enterance lets go back home")
+		self.movement:returnHome()
 	end
 end
 

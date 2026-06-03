@@ -5,21 +5,26 @@ State.__index = State
 
 local DEFAULT_DATA = {
 	stage = "at_base",
+	x = 0,
+	y = 0,
+	z = 0,
+	facing = "N/A",
+	history = {}, -- We added this to track movements
 }
 
 function State.new(path)
 	local self = setmetatable({}, State)
-
 	self.path = path or "state.json"
 	self.data = self:load()
-
 	return self
 end
 
 function State:_copyDefault()
-	return {
-		stage = DEFAULT_DATA.stage,
-	}
+	local toReturn = {}
+	for key, value in pairs(DEFAULT_DATA) do
+		toReturn[key] = value
+	end
+	return toReturn
 end
 
 function State:load()
@@ -40,8 +45,9 @@ function State:load()
 		return self:_copyDefault()
 	end
 
-	if type(data.stage) ~= "string" then
-		data.stage = DEFAULT_DATA.stage
+	-- Make sure older state files get the new history table
+	if not data.history then
+		data.history = {}
 	end
 
 	return data
@@ -60,13 +66,23 @@ end
 function State:setStage(stage)
 	self.data.stage = stage
 	self:save()
-
 	return stage
 end
 
 function State:reset()
 	self.data = self:_copyDefault()
 	self:save()
+end
+
+function State:pushMove(move)
+	table.insert(self.data.history, move)
+	self:save()
+end
+
+function State:popMove()
+	local move = table.remove(self.data.history)
+	self:save()
+	return move
 end
 
 return State
