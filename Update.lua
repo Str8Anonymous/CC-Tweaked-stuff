@@ -22,7 +22,7 @@ end
 local function download(url, outputPath)
 	local cacheBuster = tostring(os.epoch("utc"))
 	local finalUrl = url .. "?t=" .. cacheBuster
-
+	print("URL: " .. finalUrl)
 	local body = request(finalUrl)
 
 	if fs.exists(outputPath) then
