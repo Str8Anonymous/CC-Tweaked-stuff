@@ -149,7 +149,7 @@ function Movement:turnAround()
 	self.state:pushMove("turnAround")
 end
 
--- New function to retrace steps
+-- Just replace your current returnHome function in Movement.lua with this one
 function Movement:returnHome()
 	print("Returning home...")
 	local lastMove = self.state:popMove()
@@ -184,6 +184,9 @@ function Movement:returnHome()
 	end
 
 	print("Arrived home!")
+
+	print("Wiping memory to become a fresh spawn...")
+	self.state:reset()
 end
 
 return Movement

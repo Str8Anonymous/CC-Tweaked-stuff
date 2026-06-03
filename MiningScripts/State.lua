@@ -5,9 +5,9 @@ State.__index = State
 
 local DEFAULT_DATA = {
 	stage = "at_base",
-	x = 0,
-	y = 0,
-	z = 0,
+	x = 1085,
+	y = 64,
+	z = -339,
 	facing = "N/A",
 	history = {}, -- We added this to track movements
 }
