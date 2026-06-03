@@ -8,8 +8,7 @@ local DEFAULT_DATA = {
 	x = 1085,
 	y = 64,
 	z = -339,
-	facing = "N/A",
-	history = {}, -- We added this to track movements
+	facing = 0,
 }
 
 function State.new(path)
@@ -45,11 +44,6 @@ function State:load()
 		return self:_copyDefault()
 	end
 
-	-- Make sure older state files get the new history table
-	if not data.history then
-		data.history = {}
-	end
-
 	return data
 end
 
@@ -72,17 +66,6 @@ end
 function State:reset()
 	self.data = self:_copyDefault()
 	self:save()
-end
-
-function State:pushMove(move)
-	table.insert(self.data.history, move)
-	self:save()
-end
-
-function State:popMove()
-	local move = table.remove(self.data.history)
-	self:save()
-	return move
 end
 
 return State
