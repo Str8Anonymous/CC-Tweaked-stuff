@@ -29,6 +29,14 @@ for _, fileName in ipairs(allFiles) do
 end
 
 print("Factory reset complete. Deleted " .. count .. " file(s).")
-print("Rebooting turtle...")
-sleep(1.5)
-os.reboot()
+
+print("WOULD YOU LIKE TO REBOOT?")
+
+local _, key = os.pullEvent("key")
+
+if key then = keys.enter then
+	print("Rebooting..")
+	sleep(1.5)
+	os.reboot()
+	return
+end
