@@ -45,9 +45,8 @@ function TurtleStart:start()
 			sleep(0.5)
 		end
 
-		self.movement:turnRight()
 		self.movement:forwardMany(2)
-		self.movement:turnAround()
+		self.movement:turnRight()
 	end
 end
 
