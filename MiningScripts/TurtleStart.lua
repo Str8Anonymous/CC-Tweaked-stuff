@@ -33,7 +33,7 @@ function TurtleStart:start()
 	print("TurtleStart started.")
 
 	local stage = self.state:getStage()
-	print("AAA")
+
 	if DEBUG_MODE then
 		stage = self.state:setStage("at_base")
 	end
@@ -41,7 +41,15 @@ function TurtleStart:start()
 	print("Stage: " .. stage)
 
 	if stage == "at_base" then
-		self.enterState:run()
+		self.enterStart:run()
+
+		stage = self.state:setStage("at_cave_start")
+	end
+
+	if stage == "at_cave_start" then
+		self.mine:run()
+	else
+		error("Unknown stage: " .. tostring(stage), 0)
 	end
 end
 
