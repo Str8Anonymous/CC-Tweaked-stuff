@@ -40,13 +40,21 @@ function TurtleStart:start()
 	local stage = self.state:getStage()
 
 	if DEBUG_MODE then
-		if stage ~= "at_base" then
-			self.movement:returnHome()
-			sleep(0.5)
-		end
+		if stage == "at_base" then
+			print("Currently at base. Heading out!")
 
-		self.movement:forwardMany(2)
-		self.movement:turnRight()
+			-- Walk out
+			self.movement:forwardMany(2)
+			self.movement:turnRight()
+
+			-- Update the state so it knows it left
+			self.state:setStage("exploring")
+		elseif stage == "exploring" then
+			print("Currently exploring. Returning home!")
+
+			-- Retrace steps back to base
+			self.movement:returnHome()
+		end
 	end
 end
 
