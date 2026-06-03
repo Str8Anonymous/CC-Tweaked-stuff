@@ -36,4 +36,5 @@ else
 	error("Unknown stage: " .. tostring(stage), 0)
 end
 
+print("Setting state back to base for testing")
 State.setStage("at_base")
