@@ -40,6 +40,7 @@ function TurtleStart:start()
 	local stage = self.state:getStage()
 
 	if DEBUG_MODE then
+		self.state:reset()
 		self.movement:turnRight()
 		self.movement:forwardMany(2)
 		self.movement:turnAround()
