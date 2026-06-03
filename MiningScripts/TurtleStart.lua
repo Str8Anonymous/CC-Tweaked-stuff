@@ -33,6 +33,7 @@ function TurtleStart:start()
 	print("TurtleStart started.")
 
 	local stage = self.state:getStage()
+	print("AAA")
 	if DEBUG_MODE then
 		stage = self.state:setStage("at_base")
 	end
