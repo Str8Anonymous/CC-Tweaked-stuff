@@ -4,9 +4,9 @@ print("WARNING This will delete all downloaded scripts and state files!")
 print("Press Enter to confirm or any other key to cancel.")
 
 local FILES_TO_IGNORE = {
-	"startup.lua",
-	"Update.lua",
-	"Reset.lua",
+	["startup.lua"] = true,
+	["Update.lua"] = true,
+	["Reset.lua"] = true,
 }
 local _, key = os.pullEvent("key")
 if key ~= keys.enter then
@@ -18,7 +18,7 @@ local allFiles = fs.list("")
 local count = 0
 
 for _, fileName in ipairs(allFiles) do
-	if not table.find(FILES_TO_IGNORE, fileName) then
+	if not FILES_TO_IGNORE[fileName] then
 		print("Deleting " .. fileName .. "...")
 		fs.delete(fileName)
 		count = count + 1
