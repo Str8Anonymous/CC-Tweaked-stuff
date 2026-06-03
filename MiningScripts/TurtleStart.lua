@@ -40,18 +40,14 @@ function TurtleStart:start()
 	local stage = self.state:getStage()
 
 	if DEBUG_MODE then
-		self.state:reset()
+		if stage ~= "at_base" then
+			self.movement:returnHome()
+			sleep(0.5)
+		end
+
 		self.movement:turnRight()
 		self.movement:forwardMany(2)
 		self.movement:turnAround()
-	end
-
-	print("Stage " .. stage)
-
-	if stage == "at_base" then
-		self.enterStart:run()
-		print("at cave enterance lets go back home")
-		self.movement:returnHome()
 	end
 end
 
