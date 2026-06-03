@@ -1,27 +1,13 @@
 -- EnterStart.lua
 
-local function forward()
-	while turtle.detect() do
-		turtle.dig()
-		sleep(0.1)
-	end
+local Movement = require("Movement")
 
-	while not turtle.forward() do
-		turtle.attack()
-		sleep(0.1)
-	end
-end
+print("EnterStart started.")
 
-print("Moving from spawn to mine entrance...")
+-- Replace this with the real path from chest/base to cave entrance.
+-- Example:
+-- Movement.forwardMany(3)
+-- Movement.turnRight()
+-- Movement.forwardMany(5)
 
-for i = 1, 20 do
-	forward()
-end
-
-turtle.turnRight()
-
-for i = 1, 10 do
-	forward()
-end
-
-print("Reached mine entrance.")
+print("EnterStart finished.")
