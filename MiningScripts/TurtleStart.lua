@@ -34,15 +34,7 @@ function TurtleStart:start()
 	print("Stage: " .. stage)
 
 	if stage == "at_base" then
-		self.enterStart:run()
-		self.state:setStage("at_cave_start")
-		stage = "at_cave_start"
-	end
-
-	if stage == "at_cave_start" then
-		self.mine:run()
-	else
-		error("Unknown stage: " .. tostring(stage), 0)
+		self.enterState:run()
 	end
 end
 

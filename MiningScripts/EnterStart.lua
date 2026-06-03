@@ -15,11 +15,6 @@ end
 function EnterStart:run()
 	print("EnterStart running.")
 
-	-- Example path:
-	-- self.movement:forwardMany(3)
-	-- self.movement:turnRight()
-	-- self.movement:forwardMany(5)
-
 	print("EnterStart finished.")
 end
 
