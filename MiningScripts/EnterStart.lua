@@ -14,6 +14,8 @@ end
 
 function EnterStart:run()
 	print("EnterStart running.")
+	self.movement:forwardMany(2)
+	self.movement:turnRight()
 
 	print("EnterStart finished.")
 end
