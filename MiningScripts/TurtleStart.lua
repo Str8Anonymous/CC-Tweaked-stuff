@@ -34,16 +34,16 @@ end
 
 function TurtleStart:_goToMineStart()
 	print("Going to mine start.")
-	self.movement:gotoY(MiningConfig.mineStartY)
-	self.movement:gotoX(MiningConfig.mineStartX)
-	self.movement:gotoZ(MiningConfig.mineStartZ)
+	self.movement:gotoY(MiningConfig.caveEntranceY)
+	self.movement:gotoX(MiningConfig.caveEntranceX)
+	self.movement:gotoZ(MiningConfig.caveEntranceZ)
 	self.movement:turnTo(MiningConfig.mineFacing)
 end
 
 function TurtleStart:_digDownToMineLevel()
 	print("Digging down to mine level.")
 	self:_goToMineStart()
-	self.movement:gotoY(MiningConfig.mineY)
+	self.movement:stairDownTo(MiningConfig.mineY, MiningConfig.mineFacing)
 	self.movement:turnTo(MiningConfig.mineFacing)
 end
 

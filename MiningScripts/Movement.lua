@@ -187,6 +187,24 @@ function Movement:getDistanceHome()
 	return self:getDistanceTo(MiningConfig.baseX, MiningConfig.baseY, MiningConfig.baseZ)
 end
 
+function Movement:stairDownTo(targetY, facing)
+	self:turnTo(facing)
+
+	while self.state.data.y > targetY do
+		self:forward()
+		self:down()
+	end
+end
+
+function Movement:stairUpTo(targetY, facing)
+	self:turnTo(facing)
+
+	while self.state.data.y < targetY do
+		self:up()
+		self:forward()
+	end
+end
+
 function Movement:gotoY(targetY)
 	while self.state.data.y < targetY do
 		self:up()
@@ -223,8 +241,15 @@ end
 function Movement:returnHome()
 	print("Calculating fast route home...")
 
-	-- Go up to starting Y so we do not hit caves
-	self:gotoY(MiningConfig.baseY)
+	if self.state.data.y == MiningConfig.mineY
+		and self.state.data.z == MiningConfig.mineStartZ
+		and self.state.data.x >= MiningConfig.mineStartX then
+		self:gotoX(MiningConfig.mineStartX)
+		self:stairUpTo(MiningConfig.caveEntranceY, 3)
+	else
+		-- Fallback for odd saved states.
+		self:gotoY(MiningConfig.baseY)
+	end
 
 	-- Travel X and Z
 	self:gotoX(MiningConfig.baseX)

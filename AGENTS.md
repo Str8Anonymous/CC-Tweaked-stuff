@@ -28,7 +28,7 @@ Repo layout differs from turtle layout. In the repo, app modules are under `Mini
 - `Update.lua`: GitHub self-updater. Uses `http.get`, `textutils.unserializeJSON`, `fs.open`, and cache-busting query params.
 - `MiningScripts/Main.lua`: app entry point. Creates `TurtleStart` and calls `app:start()`.
 - `MiningScripts/TurtleStart.lua`: orchestration module. Creates shared `State`, `Movement`, `EnterStart`, and `Mine` objects. Current `DEBUG_MODE` flow alternates between leaving base and returning home.
-- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is `1085,64,-339`; cave/mine start is `1085,64,-341`; target mining level is `Y=16`; mining faces `1` / positive X.
+- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is `1085,64,-339`; cave entrance is `1085,64,-341`; bottom-of-stairs mine start is `1133,16,-341`; target mining level is `Y=16`; mining faces `1` / positive X.
 - `MiningScripts/State.lua`: persistent JSON state stored in `state.json`. Defaults are `stage = "at_base"`, `x = 1085`, `y = 64`, `z = -339`, `facing = 0`.
 - `MiningScripts/Movement.lua`: movement/refuel/dig/navigation helpers. Tracks coordinates manually after successful movement and saves state after each movement or turn.
 - `MiningScripts/EnterStart.lua`: early route module that moves forward twice and turns right.
@@ -37,7 +37,7 @@ Repo layout differs from turtle layout. In the repo, app modules are under `Mini
 
 ## State And Coordinates
 
-`State.lua` treats the base/home position as `x = 1085`, `y = 64`, `z = -339`, facing `0`. Mining starts at the cave entrance `x = 1085`, `y = 64`, `z = -341`, then digs down to `y = 16`.
+`State.lua` treats the base/home position as `x = 1085`, `y = 64`, `z = -339`, facing `0`. The turtle routes to the cave entrance `x = 1085`, `y = 64`, `z = -341`, then makes a staircase down to the bottom-of-stairs mine start `x = 1133`, `y = 16`, `z = -341`.
 
 `Movement.lua` uses this facing convention:
 
