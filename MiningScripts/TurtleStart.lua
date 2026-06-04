@@ -5,6 +5,7 @@ local State = require("State")
 local Movement = require("Movement")
 local EnterStart = require("EnterStart")
 local Mine = require("Mine")
+local Inventory = require("Inventory")
 
 local TurtleStart = {}
 TurtleStart.__index = TurtleStart
@@ -26,6 +27,10 @@ function TurtleStart.new(context)
 
 	self.mine = context.mine or Mine.new({
 		state = self.state,
+		movement = self.movement,
+	})
+
+	self.inventory = context.inventory or Inventory.new({
 		movement = self.movement,
 	})
 
@@ -74,6 +79,7 @@ function TurtleStart:start()
 
 	if stage == "returning_home" then
 		self.movement:returnHome()
+		self.inventory:unloadBehind()
 		stage = self.state:getStage()
 	end
 

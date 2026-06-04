@@ -1,18 +1,18 @@
 -- MiningConfig.lua
 
 local MiningConfig = {
-	baseX = 1085,
-	baseY = 64,
-	baseZ = -339,
+	baseX = 1084,
+	baseY = 63,
+	baseZ = -340,
 	baseFacing = 0,
 
-	caveEntranceX = 1085,
-	caveEntranceY = 64,
-	caveEntranceZ = -341,
+	caveEntranceX = 1084,
+	caveEntranceY = 63,
+	caveEntranceZ = -342,
 
-	mineStartX = 1133,
+	mineStartX = 1131,
 	mineStartY = 16,
-	mineStartZ = -341,
+	mineStartZ = -342,
 	mineY = 16,
 	mineFacing = 1,
 

@@ -28,16 +28,17 @@ Repo layout differs from turtle layout. In the repo, app modules are under `Mini
 - `Update.lua`: GitHub self-updater. Uses `http.get`, `textutils.unserializeJSON`, `fs.open`, and cache-busting query params.
 - `MiningScripts/Main.lua`: app entry point. Creates `TurtleStart` and calls `app:start()`.
 - `MiningScripts/TurtleStart.lua`: orchestration module. Creates shared `State`, `Movement`, `EnterStart`, and `Mine` objects. Current `DEBUG_MODE` flow alternates between leaving base and returning home.
-- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is `1085,64,-339`; cave entrance is `1085,64,-341`; bottom-of-stairs mine start is `1133,16,-341`; target mining level is `Y=16`; mining faces `1` / positive X.
-- `MiningScripts/State.lua`: persistent JSON state stored in `state.json`. Defaults are `stage = "at_base"`, `x = 1085`, `y = 64`, `z = -339`, `facing = 0`.
+- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is the turtle block at `1084,63,-340`; cave entrance is `1084,63,-342`; bottom-of-stairs mine start is `1131,16,-342`; target mining level is `Y=16`; mining faces `1` / positive X.
+- `MiningScripts/State.lua`: persistent JSON state stored in `state.json`. Defaults are `stage = "at_base"`, `x = 1084`, `y = 63`, `z = -340`, `facing = 0`.
 - `MiningScripts/Movement.lua`: movement/refuel/dig/navigation helpers. Tracks coordinates manually after successful movement and saves state after each movement or turn.
+- `MiningScripts/Inventory.lua`: inventory helper. `unloadBehind()` turns around, drops all non-empty slots into the chest behind the turtle, and turns back to preserve facing.
 - `MiningScripts/EnterStart.lua`: early route module that moves forward twice and turns right.
-- `MiningScripts/Mine.lua`: straight-tunnel mining behavior at `Y=16`. Tracks `mineDistance`, digs up/down while advancing, and requests return when inventory is full or fuel is low.
+- `MiningScripts/Mine.lua`: wide straight-tunnel mining behavior at `Y=16`. Tracks `mineDistance`, digs up and both side walls while advancing, avoids digging the floor, and requests return when inventory is full or fuel is low.
 - `MiningScripts/Reset.lua`: destructive in-game reset helper. Keeps `startup.lua`, `Update.lua`, and `Reset.lua`, deletes other writable root files, then offers reboot.
 
 ## State And Coordinates
 
-`State.lua` treats the base/home position as `x = 1085`, `y = 64`, `z = -339`, facing `0`. The turtle routes to the cave entrance `x = 1085`, `y = 64`, `z = -341`, then makes a staircase down to the bottom-of-stairs mine start `x = 1133`, `y = 16`, `z = -341`.
+`State.lua` treats the base/home position as the turtle block coordinate `x = 1084`, `y = 63`, `z = -340`, facing `0`. The player standing on top sees `y = 64`, but the turtle itself is one block lower. The turtle routes to the cave entrance `x = 1084`, `y = 63`, `z = -342`, then makes a staircase down to the bottom-of-stairs mine start `x = 1131`, `y = 16`, `z = -342`.
 
 `Movement.lua` uses this facing convention:
 
@@ -71,7 +72,7 @@ When editing movement behavior, keep `state.json` consistent with actual turtle 
 - Keep module files self-contained and return tables/classes from modules that are loaded with `require`.
 - Avoid changing root/turtle file names casually. The updater downloads by file name, and `startup.lua` expects `Update.lua` and `Main.lua` at turtle root.
 - Be careful with destructive helpers. `Reset.lua` deletes writable files in the turtle root after Enter confirmation.
-- `Mine:run()` currently mines a single straight tunnel in facing `1` / positive X from the `Y=16` mine start. It resumes by walking `mineDistance` blocks from the mine start before continuing.
+- `Mine:run()` currently mines a wide straight tunnel in facing `1` / positive X from the `Y=16` mine start. Each step mines up plus left/right side blocks, then moves forward. It intentionally does not dig down during strip mining. It resumes by walking `mineDistance` blocks from the mine start before continuing.
 - If adding new modules under `MiningScripts/`, they will be downloaded to turtle root by `Update.lua` as long as they end in `.lua`.
 - If adding code that needs HTTP, remember the in-game CC: Tweaked config/server must allow HTTP requests.
 

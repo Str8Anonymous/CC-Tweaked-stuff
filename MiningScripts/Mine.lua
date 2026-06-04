@@ -69,7 +69,14 @@ end
 
 function Mine:_digAround()
 	turtle.digUp()
-	turtle.digDown()
+
+	self.movement:turnLeft()
+	turtle.dig()
+	self.movement:turnRight()
+
+	self.movement:turnRight()
+	turtle.dig()
+	self.movement:turnLeft()
 end
 
 function Mine:_mineOneStep()

@@ -23,6 +23,7 @@ local function resetModules()
 	package.loaded.State = nil
 	package.loaded.Movement = nil
 	package.loaded.Mine = nil
+	package.loaded.Inventory = nil
 	package.loaded.TurtleStart = nil
 end
 
@@ -89,6 +90,8 @@ local function installComputerCraftMocks()
 		rightTurns = 0,
 		itemCounts = {},
 		refuelSlots = {},
+		dropCalls = 0,
+		droppedItems = {},
 	}
 
 	turtle = {
@@ -161,6 +164,18 @@ local function installComputerCraftMocks()
 		getItemCount = function(slot)
 			return turtleState.itemCounts[slot] or 0
 		end,
+		drop = function()
+			local slot = turtleState.selectedSlot
+			local count = turtleState.itemCounts[slot] or 0
+			if count <= 0 then
+				return false
+			end
+
+			turtleState.dropCalls = turtleState.dropCalls + 1
+			turtleState.droppedItems[slot] = (turtleState.droppedItems[slot] or 0) + count
+			turtleState.itemCounts[slot] = 0
+			return true
+		end,
 	}
 
 	return turtleState
@@ -174,13 +189,13 @@ test("state defaults include base, mine start, target Y, and mining progress", f
 	local state = State.new()
 
 	assertEqual(state.data.stage, "at_base")
-	assertEqual(state.data.x, 1085)
-	assertEqual(state.data.y, 64)
-	assertEqual(state.data.z, -339)
+	assertEqual(state.data.x, 1084)
+	assertEqual(state.data.y, 63)
+	assertEqual(state.data.z, -340)
 	assertEqual(state.data.facing, 0)
-	assertEqual(state.data.mineStartX, 1133)
+	assertEqual(state.data.mineStartX, 1131)
 	assertEqual(state.data.mineStartY, 16)
-	assertEqual(state.data.mineStartZ, -341)
+	assertEqual(state.data.mineStartZ, -342)
 	assertEqual(state.data.mineY, 16)
 	assertEqual(state.data.mineDistance, 0)
 end)
@@ -203,9 +218,9 @@ test("returnHome preserves mining progress while resetting position and stage", 
 	movement:returnHome()
 
 	assertEqual(state.data.stage, "at_base")
-	assertEqual(state.data.x, 1085)
-	assertEqual(state.data.y, 64)
-	assertEqual(state.data.z, -339)
+	assertEqual(state.data.x, 1084)
+	assertEqual(state.data.y, 63)
+	assertEqual(state.data.z, -340)
 	assertEqual(state.data.facing, 0)
 	assertEqual(state.data.mineDistance, 12)
 end)
@@ -222,9 +237,9 @@ test("mine run returns immediately when inventory is full", function()
 	local Mine = require("Mine")
 	local state = State.new()
 	state.data.stage = "mining"
-	state.data.x = 1133
+	state.data.x = 1131
 	state.data.y = 16
-	state.data.z = -341
+	state.data.z = -342
 
 	local movement = Movement.new(state)
 	local mine = Mine.new({ state = state, movement = movement })
@@ -245,9 +260,9 @@ test("mine run digs at Y 16 and tracks tunnel distance", function()
 	local Mine = require("Mine")
 	local state = State.new()
 	state.data.stage = "mining"
-	state.data.x = 1133
+	state.data.x = 1131
 	state.data.y = 16
-	state.data.z = -341
+	state.data.z = -342
 	state.data.facing = 1
 
 	local movement = Movement.new(state)
@@ -258,11 +273,39 @@ test("mine run digs at Y 16 and tracks tunnel distance", function()
 	assertEqual(state.data.stage, "mining")
 	assertEqual(state.data.mineDistance, 3)
 	assertEqual(state.data.y, 16)
-	assertEqual(state.data.x, 1136)
-	assertEqual(state.data.z, -341)
+	assertEqual(state.data.x, 1134)
+	assertEqual(state.data.z, -342)
 	assertEqual(turtleState.forwardCalls, 3)
 	assertEqual(turtleState.digUpCalls, 3)
-	assertEqual(turtleState.digDownCalls, 3)
+	assertEqual(turtleState.digDownCalls, 0)
+	assertEqual(turtleState.digCalls, 6)
+	assertEqual(state.data.facing, 1)
+end)
+
+test("inventory unload drops non-empty slots into chest behind and preserves facing", function()
+	resetModules()
+	local turtleState = installComputerCraftMocks()
+	turtleState.itemCounts[1] = 12
+	turtleState.itemCounts[5] = 64
+
+	local State = require("State")
+	local Movement = require("Movement")
+	local Inventory = require("Inventory")
+	local state = State.new()
+	state.data.facing = 0
+
+	local movement = Movement.new(state)
+	local inventory = Inventory.new({ movement = movement })
+	local unloaded = inventory:unloadBehind()
+
+	assertEqual(unloaded, 76)
+	assertEqual(turtleState.dropCalls, 2)
+	assertEqual(turtleState.droppedItems[1], 12)
+	assertEqual(turtleState.droppedItems[5], 64)
+	assertEqual(turtleState.itemCounts[1], 0)
+	assertEqual(turtleState.itemCounts[5], 0)
+	assertEqual(state.data.facing, 0)
+	assertEqual(turtleState.rightTurns, 4)
 end)
 
 test("mine run resumes from saved tunnel distance at stair bottom", function()
@@ -274,9 +317,9 @@ test("mine run resumes from saved tunnel distance at stair bottom", function()
 	local Mine = require("Mine")
 	local state = State.new()
 	state.data.stage = "mining"
-	state.data.x = 1133
+	state.data.x = 1131
 	state.data.y = 16
-	state.data.z = -341
+	state.data.z = -342
 	state.data.facing = 1
 	state.data.mineDistance = 3
 
@@ -285,9 +328,9 @@ test("mine run resumes from saved tunnel distance at stair bottom", function()
 	local result = mine:run(1)
 
 	assertEqual(result, "mining")
-	assertEqual(state.data.x, 1137)
+	assertEqual(state.data.x, 1135)
 	assertEqual(state.data.y, 16)
-	assertEqual(state.data.z, -341)
+	assertEqual(state.data.z, -342)
 	assertEqual(state.data.mineDistance, 4)
 	assertEqual(turtleState.forwardCalls, 4)
 end)
@@ -300,9 +343,9 @@ test("returnHome climbs the staircase from the mining tunnel", function()
 	local Movement = require("Movement")
 	local state = State.new()
 	state.data.stage = "returning_home"
-	state.data.x = 1137
+	state.data.x = 1135
 	state.data.y = 16
-	state.data.z = -341
+	state.data.z = -342
 	state.data.facing = 1
 	state.data.mineDistance = 4
 
@@ -310,13 +353,44 @@ test("returnHome climbs the staircase from the mining tunnel", function()
 	movement:returnHome()
 
 	assertEqual(state.data.stage, "at_base")
-	assertEqual(state.data.x, 1085)
-	assertEqual(state.data.y, 64)
-	assertEqual(state.data.z, -339)
+	assertEqual(state.data.x, 1084)
+	assertEqual(state.data.y, 63)
+	assertEqual(state.data.z, -340)
 	assertEqual(state.data.facing, 0)
 	assertEqual(state.data.mineDistance, 4)
-	assertEqual(turtleState.upCalls, 48)
-	assertEqual(turtleState.forwardCalls, 54)
+	assertEqual(turtleState.upCalls, 47)
+	assertEqual(turtleState.forwardCalls, 53)
+end)
+
+test("turtle start unloads inventory after returning home", function()
+	resetModules()
+	installComputerCraftMocks()
+
+	local State = require("State")
+	local TurtleStart = require("TurtleStart")
+	local state = State.new()
+	state.data.stage = "returning_home"
+	state.data.x = 1084
+	state.data.y = 63
+	state.data.z = -340
+	state.data.facing = 0
+
+	local inventory = {
+		calls = 0,
+		unloadBehind = function(self)
+			self.calls = self.calls + 1
+			return 10
+		end,
+	}
+
+	local app = TurtleStart.new({
+		state = state,
+		inventory = inventory,
+	})
+	local stage = app:start()
+
+	assertEqual(stage, "at_base")
+	assertEqual(inventory.calls, 1)
 end)
 
 test("turtle start makes a staircase from cave entrance before mining", function()
@@ -329,15 +403,18 @@ test("turtle start makes a staircase from cave entrance before mining", function
 	app:start()
 
 	assertEqual(app.state.data.stage, "mining")
-	assertEqual(app.state.data.x, 1135)
+	assertEqual(app.state.data.x, 1133)
 	assertEqual(app.state.data.y, 16)
-	assertEqual(app.state.data.z, -341)
+	assertEqual(app.state.data.z, -342)
 	assertEqual(app.state.data.facing, 1)
 	assertEqual(app.state.data.mineDistance, 2)
-	assertEqual(turtleState.leftTurns, 0)
-	assertEqual(turtleState.rightTurns, 1)
-	assertEqual(turtleState.downCalls, 48)
-	assertEqual(turtleState.forwardCalls, 52)
+	assertEqual(turtleState.leftTurns, 4)
+	assertEqual(turtleState.rightTurns, 5)
+	assertEqual(turtleState.downCalls, 47)
+	assertEqual(turtleState.forwardCalls, 51)
+	assertEqual(turtleState.digCalls, 4)
+	assertEqual(turtleState.digUpCalls, 2)
+	assertEqual(turtleState.digDownCalls, 0)
 end)
 
 local failures = 0
