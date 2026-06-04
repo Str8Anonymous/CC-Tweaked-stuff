@@ -1,5 +1,7 @@
 -- Movement.lua
 
+local MiningConfig = require("MiningConfig")
+
 local Movement = {}
 Movement.__index = Movement
 
@@ -175,6 +177,16 @@ function Movement:turnTo(targetFacing)
 	end
 end
 
+function Movement:getDistanceTo(x, y, z)
+	return math.abs((self.state.data.x or 0) - x)
+		+ math.abs((self.state.data.y or 0) - y)
+		+ math.abs((self.state.data.z or 0) - z)
+end
+
+function Movement:getDistanceHome()
+	return self:getDistanceTo(MiningConfig.baseX, MiningConfig.baseY, MiningConfig.baseZ)
+end
+
 function Movement:gotoY(targetY)
 	while self.state.data.y < targetY do
 		self:up()
@@ -212,19 +224,23 @@ function Movement:returnHome()
 	print("Calculating fast route home...")
 
 	-- Go up to starting Y so we do not hit caves
-	self:gotoY(64)
+	self:gotoY(MiningConfig.baseY)
 
 	-- Travel X and Z
-	self:gotoX(1085)
-	self:gotoZ(-339)
+	self:gotoX(MiningConfig.baseX)
+	self:gotoZ(MiningConfig.baseZ)
 
 	-- Face forward again
-	self:turnTo(0)
+	self:turnTo(MiningConfig.baseFacing)
 
 	print("Arrived home!")
 
-	print("Wiping memory to become a fresh spawn...")
-	self.state:reset()
+	self.state.data.stage = "at_base"
+	self.state.data.x = MiningConfig.baseX
+	self.state.data.y = MiningConfig.baseY
+	self.state.data.z = MiningConfig.baseZ
+	self.state.data.facing = MiningConfig.baseFacing
+	self.state:save()
 end
 
 return Movement

@@ -1,5 +1,6 @@
 -- TurtleStart.lua
 
+local MiningConfig = require("MiningConfig")
 local State = require("State")
 local Movement = require("Movement")
 local EnterStart = require("EnterStart")
@@ -8,25 +9,22 @@ local Mine = require("Mine")
 local TurtleStart = {}
 TurtleStart.__index = TurtleStart
 
-local DEBUG_MODE = true
+function TurtleStart.new(context)
+	context = context or {}
 
-function TurtleStart.new()
 	local self = setmetatable({}, TurtleStart)
 
-	self.state = State.new()
-	self.state.data.x = 1085
-	self.state.data.y = 64
-	self.state.data.z = -339
+	self.state = context.state or State.new()
 
 	-- Pass the state instance to movement
-	self.movement = Movement.new(self.state)
+	self.movement = context.movement or Movement.new(self.state)
 
-	self.enterStart = EnterStart.new({
+	self.enterStart = context.enterStart or EnterStart.new({
 		state = self.state,
 		movement = self.movement,
 	})
 
-	self.mine = Mine.new({
+	self.mine = context.mine or Mine.new({
 		state = self.state,
 		movement = self.movement,
 	})
@@ -34,28 +32,52 @@ function TurtleStart.new()
 	return self
 end
 
+function TurtleStart:_goToMineStart()
+	print("Going to mine start.")
+	self.movement:gotoY(MiningConfig.mineStartY)
+	self.movement:gotoX(MiningConfig.mineStartX)
+	self.movement:gotoZ(MiningConfig.mineStartZ)
+	self.movement:turnTo(MiningConfig.mineFacing)
+end
+
+function TurtleStart:_digDownToMineLevel()
+	print("Digging down to mine level.")
+	self:_goToMineStart()
+	self.movement:gotoY(MiningConfig.mineY)
+	self.movement:turnTo(MiningConfig.mineFacing)
+end
+
 function TurtleStart:start()
 	print("TurtleStart started.")
 
 	local stage = self.state:getStage()
 
-	if DEBUG_MODE then
-		if stage == "at_base" then
-			print("Currently at base. Heading out!")
-
-			-- Walk out
-			self.movement:forwardMany(2)
-			self.movement:turnRight()
-
-			-- Update the state so it knows it left
-			self.state:setStage("exploring")
-		elseif stage == "exploring" then
-			print("Currently exploring. Returning home!")
-
-			-- Retrace steps back to base
-			self.movement:returnHome()
-		end
+	if stage == "at_base" then
+		print("Currently at base. Heading to mine.")
+		stage = self.state:setStage("travel_to_mine")
 	end
+
+	if stage == "travel_to_mine" then
+		self:_goToMineStart()
+		stage = self.state:setStage("digging_down")
+	end
+
+	if stage == "digging_down" then
+		self:_digDownToMineLevel()
+		stage = self.state:setStage("mining")
+	end
+
+	if stage == "mining" then
+		self.mine:run()
+		stage = self.state:getStage()
+	end
+
+	if stage == "returning_home" then
+		self.movement:returnHome()
+		stage = self.state:getStage()
+	end
+
+	return stage
 end
 
 return TurtleStart

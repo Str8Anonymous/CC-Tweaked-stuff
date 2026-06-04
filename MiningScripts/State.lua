@@ -1,14 +1,21 @@
 -- State.lua
 
+local MiningConfig = require("MiningConfig")
+
 local State = {}
 State.__index = State
 
 local DEFAULT_DATA = {
 	stage = "at_base",
-	x = 1085,
-	y = 64,
-	z = -339,
-	facing = 0,
+	x = MiningConfig.baseX,
+	y = MiningConfig.baseY,
+	z = MiningConfig.baseZ,
+	facing = MiningConfig.baseFacing,
+	mineStartX = MiningConfig.mineStartX,
+	mineStartY = MiningConfig.mineStartY,
+	mineStartZ = MiningConfig.mineStartZ,
+	mineY = MiningConfig.mineY,
+	mineDistance = 0,
 }
 
 function State.new(path)
@@ -24,6 +31,18 @@ function State:_copyDefault()
 		toReturn[key] = value
 	end
 	return toReturn
+end
+
+function State:_withDefaults(data)
+	local withDefaults = self:_copyDefault()
+
+	if type(data) == "table" then
+		for key, value in pairs(data) do
+			withDefaults[key] = value
+		end
+	end
+
+	return withDefaults
 end
 
 function State:load()
@@ -44,7 +63,7 @@ function State:load()
 		return self:_copyDefault()
 	end
 
-	return data
+	return self:_withDefaults(data)
 end
 
 function State:save()
