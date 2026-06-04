@@ -10,6 +10,7 @@ function Mine.new(context)
 
 	self.state = context.state
 	self.movement = context.movement
+	self.inventory = context.inventory
 	self.maxStepsPerRun = context.maxStepsPerRun
 
 	return self
@@ -30,6 +31,10 @@ function Mine:_getReturnFuelRequired()
 end
 
 function Mine:_getReturnReason()
+	if self.inventory then
+		self.inventory:dropJunk()
+	end
+
 	if self:_isInventoryFull() then
 		return "inventory_full"
 	end

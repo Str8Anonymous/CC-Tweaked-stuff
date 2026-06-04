@@ -25,13 +25,14 @@ function TurtleStart.new(context)
 		movement = self.movement,
 	})
 
-	self.mine = context.mine or Mine.new({
-		state = self.state,
+	self.inventory = context.inventory or Inventory.new({
 		movement = self.movement,
 	})
 
-	self.inventory = context.inventory or Inventory.new({
+	self.mine = context.mine or Mine.new({
+		state = self.state,
 		movement = self.movement,
+		inventory = self.inventory,
 	})
 
 	return self

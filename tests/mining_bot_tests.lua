@@ -89,6 +89,7 @@ local function installComputerCraftMocks()
 		leftTurns = 0,
 		rightTurns = 0,
 		itemCounts = {},
+		itemDetails = {},
 		refuelSlots = {},
 		dropCalls = 0,
 		droppedItems = {},
@@ -163,6 +164,14 @@ local function installComputerCraftMocks()
 		end,
 		getItemCount = function(slot)
 			return turtleState.itemCounts[slot] or 0
+		end,
+		getItemDetail = function(slot)
+			local name = turtleState.itemDetails[slot]
+			if not name then
+				return nil
+			end
+
+			return { name = name, count = turtleState.itemCounts[slot] or 0 }
 		end,
 		drop = function()
 			local slot = turtleState.selectedSlot
@@ -306,6 +315,65 @@ test("inventory unload drops non-empty slots into chest behind and preserves fac
 	assertEqual(turtleState.itemCounts[5], 0)
 	assertEqual(state.data.facing, 0)
 	assertEqual(turtleState.rightTurns, 4)
+end)
+
+test("inventory dropJunk drops common stone junk and keeps ores", function()
+	resetModules()
+	local turtleState = installComputerCraftMocks()
+	turtleState.itemCounts[1] = 64
+	turtleState.itemDetails[1] = "minecraft:cobblestone"
+	turtleState.itemCounts[2] = 32
+	turtleState.itemDetails[2] = "minecraft:cobbled_deepslate"
+	turtleState.itemCounts[3] = 8
+	turtleState.itemDetails[3] = "minecraft:raw_iron"
+	turtleState.itemCounts[4] = 12
+	turtleState.itemDetails[4] = "minecraft:coal"
+
+	local State = require("State")
+	local Movement = require("Movement")
+	local Inventory = require("Inventory")
+	local state = State.new()
+	local movement = Movement.new(state)
+	local inventory = Inventory.new({ movement = movement })
+	local dropped = inventory:dropJunk()
+
+	assertEqual(dropped, 96)
+	assertEqual(turtleState.itemCounts[1], 0)
+	assertEqual(turtleState.itemCounts[2], 0)
+	assertEqual(turtleState.itemCounts[3], 8)
+	assertEqual(turtleState.itemCounts[4], 12)
+	assertEqual(turtleState.dropCalls, 2)
+end)
+
+test("mine run drops junk before deciding inventory is full", function()
+	resetModules()
+	local turtleState = installComputerCraftMocks()
+	for slot = 1, 16 do
+		turtleState.itemCounts[slot] = 64
+		turtleState.itemDetails[slot] = "minecraft:cobblestone"
+	end
+
+	local State = require("State")
+	local Movement = require("Movement")
+	local Inventory = require("Inventory")
+	local Mine = require("Mine")
+	local state = State.new()
+	state.data.stage = "mining"
+	state.data.x = 1131
+	state.data.y = 16
+	state.data.z = -342
+	state.data.facing = 1
+
+	local movement = Movement.new(state)
+	local inventory = Inventory.new({ movement = movement })
+	local mine = Mine.new({ state = state, movement = movement, inventory = inventory })
+	local result = mine:run(1)
+
+	assertEqual(result, "mining")
+	assertEqual(state.data.stage, "mining")
+	assertEqual(state.data.mineDistance, 1)
+	assertEqual(turtleState.dropCalls, 16)
+	assertEqual(turtleState.forwardCalls, 1)
 end)
 
 test("mine run resumes from saved tunnel distance at stair bottom", function()
