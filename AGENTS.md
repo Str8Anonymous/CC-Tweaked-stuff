@@ -28,7 +28,7 @@ Repo layout differs from turtle layout. In the repo, app modules are under `Mini
 - `Update.lua`: GitHub self-updater. Uses `http.get`, `textutils.unserializeJSON`, `fs.open`, and cache-busting query params.
 - `MiningScripts/Main.lua`: app entry point. Creates `TurtleStart` and calls `app:start()`.
 - `MiningScripts/TurtleStart.lua`: orchestration module. Creates shared `State`, `Movement`, `EnterStart`, and `Mine` objects. Current `DEBUG_MODE` flow alternates between leaving base and returning home.
-- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is `1085,64,-339`; mine start is `1084,64,-338`; target mining level is `Y=16`.
+- `MiningScripts/MiningConfig.lua`: shared base/mine constants. Base is `1085,64,-339`; cave/mine start is `1085,64,-341`; target mining level is `Y=16`; mining faces `1` / positive X.
 - `MiningScripts/State.lua`: persistent JSON state stored in `state.json`. Defaults are `stage = "at_base"`, `x = 1085`, `y = 64`, `z = -339`, `facing = 0`.
 - `MiningScripts/Movement.lua`: movement/refuel/dig/navigation helpers. Tracks coordinates manually after successful movement and saves state after each movement or turn.
 - `MiningScripts/EnterStart.lua`: early route module that moves forward twice and turns right.
@@ -37,7 +37,7 @@ Repo layout differs from turtle layout. In the repo, app modules are under `Mini
 
 ## State And Coordinates
 
-`State.lua` treats the base/home position as `x = 1085`, `y = 64`, `z = -339`, facing `0`. Mining starts at `x = 1084`, `y = 64`, `z = -338`, then digs down to `y = 16`.
+`State.lua` treats the base/home position as `x = 1085`, `y = 64`, `z = -339`, facing `0`. Mining starts at the cave entrance `x = 1085`, `y = 64`, `z = -341`, then digs down to `y = 16`.
 
 `Movement.lua` uses this facing convention:
 
@@ -71,7 +71,7 @@ When editing movement behavior, keep `state.json` consistent with actual turtle 
 - Keep module files self-contained and return tables/classes from modules that are loaded with `require`.
 - Avoid changing root/turtle file names casually. The updater downloads by file name, and `startup.lua` expects `Update.lua` and `Main.lua` at turtle root.
 - Be careful with destructive helpers. `Reset.lua` deletes writable files in the turtle root after Enter confirmation.
-- `Mine:run()` currently mines a single straight tunnel in facing `0` from the `Y=16` mine start. It resumes by walking `mineDistance` blocks from the mine start before continuing.
+- `Mine:run()` currently mines a single straight tunnel in facing `1` / positive X from the `Y=16` mine start. It resumes by walking `mineDistance` blocks from the mine start before continuing.
 - If adding new modules under `MiningScripts/`, they will be downloaded to turtle root by `Update.lua` as long as they end in `.lua`.
 - If adding code that needs HTTP, remember the in-game CC: Tweaked config/server must allow HTTP requests.
 

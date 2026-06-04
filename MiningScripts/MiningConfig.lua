@@ -6,11 +6,11 @@ local MiningConfig = {
 	baseZ = -339,
 	baseFacing = 0,
 
-	mineStartX = 1084,
+	mineStartX = 1085,
 	mineStartY = 64,
-	mineStartZ = -338,
+	mineStartZ = -341,
 	mineY = 16,
-	mineFacing = 0,
+	mineFacing = 1,
 
 	returnFuelBuffer = 30,
 }
